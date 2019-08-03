@@ -1,7 +1,8 @@
+using AuthAPI.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace WebAPI.Models
+namespace AuthApi.Models
 {
     public class AuthenticationContext : IdentityDbContext
     {
@@ -9,5 +10,7 @@ namespace WebAPI.Models
         {
 
         }
+
+        public DbSet<ApplicationUser> ApplicationUsers { get;set;}
     }
 }

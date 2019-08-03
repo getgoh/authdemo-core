@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Security.Authentication;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,7 +12,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace LoginAPI
+using Microsoft.EntityFrameworkCore;
+
+using AuthApi.Models;
+using AuthAPI.Models;
+using Microsoft.AspNetCore.Identity;
+
+namespace AuthApi
 {
     public class Startup
     {
@@ -26,6 +33,25 @@ namespace LoginAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddDbContext<AuthenticationContext>(options =>
+                options.UseNpgsql(Configuration.GetConnectionString("IdentityConnection"))
+            );
+
+            services.AddDefaultIdentity<ApplicationUser>()
+                .AddEntityFrameworkStores<AuthenticationContext>();
+
+            services.Configure<IdentityOptions>(options => 
+                {
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequiredLength = 4;
+                }
+            );
+
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,6 +66,14 @@ namespace LoginAPI
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseCors(builder =>
+                builder.WithOrigins("http://localhost:4200")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+            );
+
+            app.UseAuthentication();
 
             app.UseHttpsRedirection();
             app.UseMvc();
